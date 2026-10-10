@@ -1,0 +1,133 @@
+# Hybrid CNN Bi-LSTM Model for Multiclass Stress Detection
+
+A deep learning model that classifies **baseline, stress, and amusement** states from multimodal physiological signals (ECG, EDA, temperature, respiration) using a hybrid **CNN + Bidirectional LSTM** architecture. The model is trained and evaluated on the public **WESAD** dataset and reaches **96% accuracy**.
+
+## Overview
+
+Stress affects mental and physical health, and traditional assessment (self-reports, multiple lab sensors) is subjective and inconvenient. This project builds a single-stage, end-to-end model that learns features directly from wearable-sensor signals:
+
+- **CNN layers** automatically extract local patterns, so no manual feature engineering is needed.
+- **Bi-LSTM layer** learns temporal dependencies in both forward and backward directions.
+- **Fully connected + Softmax layers** output the final class probabilities.
+
+## Dataset
+
+**WESAD (Wearable Stress and Affect Detection)** is a public benchmark dataset.
+
+- Recorded in a controlled lab study with 17 participants; valid recordings from **15 subjects** were used.
+- Chest-worn RespiBAN sensor signals used: **ECG, EDA, Temperature, Respiration**.
+- Classes: **Baseline, Stress, Amusement**.
+
+> The dataset is not included in this repository. Download WESAD from its official source and place it in the `data/` folder.
+
+## Methodology
+
+**1. Preprocessing**
+1. Signal extraction (4 channels: ECG, EDA, Temp, Resp)
+2. Resampling from 700 Hz to 64 Hz
+3. Per-subject normalization (StandardScaler, zero mean and unit variance)
+4. Sliding-window segmentation with overlap, plus label encoding
+
+**2. Model architecture**
+
+```
+Input (ECG, EDA, Temp, Resp)
+   -> Conv1D + BatchNorm + ReLU + MaxPool  (32 filters, kernel = 3)
+   -> Conv1D + BatchNorm + ReLU + MaxPool  (64 filters, kernel = 3)
+   -> Conv1D + BatchNorm + ReLU + MaxPool  (128 filters, kernel = 3)
+   -> Bidirectional LSTM
+   -> Fully Connected (128 -> 3) + Dropout
+   -> Softmax (Baseline / Stress / Amusement)
+```
+
+## Results
+
+Evaluated on a test set of 443 samples.
+
+| Class | Precision | Recall | F1-Score | Support |
+|---|---|---|---|---|
+| Baseline | 0.97 | 0.98 | 0.97 | 235 |
+| Stress | 0.98 | 0.96 | 0.98 | 134 |
+| Amusement | 0.88 | 0.89 | 0.89 | 74 |
+| **Accuracy** | | | **96%** | 443 |
+
+**Error metrics:** MSE = 0.1219, MAE = 0.0677, RMSE = 0.3491
+
+**ROC AUC (one-vs-rest):** Baseline = 0.996, Stress = 0.999, Amusement = 0.987
+
+**Training:** the loss dropped steadily and converged to about 0.1036 by epoch 36, with no divergence.
+
+### Confusion matrix (raw counts)
+
+| True \ Predicted | Baseline | Stress | Amusement |
+|---|---|---|---|
+| Baseline | 230 | 1 | 4 |
+| Stress | 0 | 129 | 5 |
+| Amusement | 8 | 0 | 66 |
+
+Add your result plots here:
+
+```
+![Confusion Matrix](images/confusion_matrix.png)
+![ROC Curve](images/roc_curve.png)
+![Training Loss](images/training_loss.png)
+```
+
+## Tech Stack
+
+- Python
+- TensorFlow / Keras
+- NumPy, Pandas
+- Scikit-learn
+- Matplotlib / Seaborn
+- Google Colab / Jupyter Notebook
+
+## Project Structure
+
+```
+├── data/                  # WESAD dataset (not included)
+├── notebooks/
+│   └── stress_detection.ipynb
+├── images/                # result plots
+├── requirements.txt
+└── README.md
+```
+
+> Update this to match your actual file names.
+
+## How to Run
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/<your-username>/cnn-bilstm-stress-detection.git
+cd cnn-bilstm-stress-detection
+
+# 2. Install dependencies
+pip install numpy pandas scikit-learn tensorflow matplotlib seaborn
+
+# 3. Place the WESAD dataset in the data/ folder
+
+# 4. Open and run the notebook
+jupyter notebook notebooks/stress_detection.ipynb
+```
+
+You can also upload the notebook to Google Colab and run all cells.
+
+## Key Highlights
+
+- End-to-end single-stage framework with no manual feature engineering
+- Captures both spatial (CNN) and temporal (Bi-LSTM) patterns
+- Balanced performance across all three classes
+- Evaluated with accuracy, precision, recall, F1-score, MSE, MAE, RMSE, confusion matrix, and ROC-AUC
+
+## Future Work
+
+- Test with real-time data from commercial smartwatches
+- Build personalized models for individual users
+- Add attention mechanisms and improve the Amusement class
+
+## Author
+
+**Madhumitha M**
+B.Tech Information Technology, SASTRA Deemed University
+[LinkedIn](https://linkedin.com/in/madhuuu31) | madhumithamano.31@gmail.com
